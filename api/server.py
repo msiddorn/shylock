@@ -32,9 +32,9 @@ class Server:
         try:
             pool.add_user(name)
         except NoneUniqueUserError as err:
-            return err.message
+            return str(err)
 
-        # return a 200OK
+        # return a 200 OK
         return 'done\n'
 
     @router('GET', '/v1/<pool_id>/users')
@@ -44,8 +44,17 @@ class Server:
         except KeyError:
             return 'Error - No such pool id\n'
 
+        return ''.join('{}\n'.format(name) for name in pool.users)
+
+    @router('GET', '/v1/<pool_id>/balances')
+    def list_balances(self, pool_id):
+        try:
+            pool = self.pools[pool_id]
+        except KeyError:
+            return 'Error - No such pool id\n'
+
         return ''.join(
-            '{} - £{:0.2f}\n'.format(name, balance)
+            '{}: {}£{:0.2f}\n'.format(name, '' if balance >= 0 else '-', abs(balance))
             for name, balance in pool.balances.items()
         )
 
@@ -53,18 +62,17 @@ class Server:
     def create_new_pool(self):
         data = json.loads(request.body.read().decode('utf-8'))
         name = data.get('name')
-        pool_id = next(self.pool_ids)
+        pool_id = str(next(self.pool_ids))
         self.pools[pool_id] = Pool(pool_id, name)
 
-        # return a 200 or maybe the id
+        # return a 200 OK
         return 'done\n'
 
     @router('GET', '/v1/pools')
     def list_pools(self):
         return ''.join('{}\n'.format(pool) for pool in self.pools.values())
 
-    # create transaction
-    @router('POST', '/v1/<pool_id>/transaction')
+    @router('POST', '/v1/<pool_id>/transactions')
     def create_new_transaction(self, pool_id):
         try:
             pool = self.pools[pool_id]
@@ -81,4 +89,19 @@ class Server:
         try:
             pool.add_transaction(spender, amount, consumers)
         except UserNotFoundError as err:
-            return err.message
+            return str(err)
+
+        # return a 200 OK
+        return 'done\n'
+
+    @router('GET', '/v1/<pool_id>/transactions')
+    def list_transactions(self, pool_id):
+        try:
+            pool = self.pools[pool_id]
+        except KeyError:
+            return 'Error - No such pool id\n'
+
+        return ''.join(
+            '{0[spender]} spent {0[amount]} on {0[consumers]\n}'.format(transaction)
+            for transaction in pool.old_transactions
+        )

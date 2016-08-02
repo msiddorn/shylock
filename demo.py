@@ -3,14 +3,62 @@ import json
 
 
 api_calls = [
-    ('pools', {'name': 'Paris'}),
-    ('pools', {'name': 'Rome'}),
-    ('pools', None),
+    ('add new pool for paris trip', 'pools', {'name': 'Paris'}),
+    ('add new pool for rome trip', 'pools', {'name': 'Rome'}),
+    ('list pools', 'pools', None),
+    ('Add Mark to Paris trip', '0/users', {'name': 'Mark'}),
+    ('Add Sophie to Paris trip', '0/users', {'name': 'Sophie'}),
+    ('Add Tom to Paris trip', '0/users', {'name': 'Tom'}),
+    ('Try to add Tom to Paris trip again', '0/users', {'name': 'Tom'}),
+    ('List users for Paris', '0/users', None),
+    ('List users for Rome', '1/users', None),
+    ('List users for Timbuktu', '2/users', None),
+    (
+        'Mark spends £30 on everyone',
+        '0/transactions',
+        {
+            'spender': 'Mark',
+            'amount': 30,
+            'consumers': {
+                'Mark': 1,
+                'Sophie': 1,
+                'Tom': 1,
+            },
+        }
+    ),
+    (
+        'Tom buys sophie an ice cream and Mark a double cone',
+        '0/transactions',
+        {
+            'spender': 'Tom',
+            'amount': 7.5,
+            'consumers': {
+                'Mark': 2,
+                'Sophie': 1,
+            },
+        }
+    ),
+    (
+        'Mark tries to spend money for a pool he\'s not in',
+        '1/transactions',
+        {
+            'spender': 'Mark',
+            'amount': 1,
+            'consumers': {
+                'Mark': 1,
+                'Sophie': 1,
+            },
+        }
+    ),
+    ('List the balances for the Paris trip', '0/balances', None),
+    ('List the balances for the Rome trip', '1/balances', None),
+    ('List all of the old transactions for the Paris trip', '0/transactions', None),
 ]
 
 headers = {'Content-Type': 'application/json'}
 
-for api_loc, data in api_calls:
+for description, api_loc, data in api_calls:
+    print(description)
     address = 'http://0.0.0.0:9555/v1/{}'.format(api_loc)
     if data is None:
         print('Calling get on "{}"'.format(address))

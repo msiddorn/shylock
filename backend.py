@@ -7,17 +7,14 @@ from collections import defaultdict
 
 class BaseShylockException(Exception):
     ''' base exception class for the shylock program'''
-    pass
 
 
 class UserNotFoundError(BaseShylockException):
     ''' User not found where it was expected '''
-    pass
 
 
 class NoneUniqueUserError(BaseShylockException):
     ''' Ambiguous reference to a user '''
-    pass
 
 
 class Pool:
@@ -36,7 +33,7 @@ class Pool:
         self.old_transactions = []
 
     def __repr__(self):
-        return '({0.name} - {0.id})'.format(self)
+        return '{0.id}:{0.name}'.format(self)
 
     def add_user(self, name):
         if name is None or name in self.users:
@@ -44,7 +41,7 @@ class Pool:
         self.users.append(name)
 
     def add_transaction(self, spender, amount, consumers):
-        for user in [spender] + consumers.keys():
+        for user in [spender] + list(consumers.keys()):
             if user not in self.users:
                 raise UserNotFoundError('User {} not in pool {}'.format(
                     user,
