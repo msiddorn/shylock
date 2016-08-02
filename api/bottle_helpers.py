@@ -2,6 +2,8 @@
 Helper functions for the bottle server stuff
 Mainly for setting up the routes
 '''
+from bottle import ServerAdapter
+from cherrypy.wsgiserver import CherryPyWSGIServer
 
 
 def router(method, route):
@@ -29,3 +31,14 @@ def init_routes(app):
                     method=method_name,
                     callback=attr,
                 )
+
+class MySSLCherryPy(ServerAdapter):
+    def run(self, handler):
+        server = CherryPyWSGIServer((self.host, self.port), handler)
+        cert = '../secrets/server.pem'
+        server.ssl_certificate = cert
+        server.ssl_private_key = cert
+        try:
+            server.start()
+        finally:
+            server.stop()

@@ -3,11 +3,12 @@
     Backend webapi for the shylock program
 '''
 import json
-from bottle import Bottle, request
+from bottle import Bottle, request, server_names
 from itertools import count
-from .bottle_helpers import router
+from .bottle_helpers import router, MySSLCherryPy
 from backend import Pool, UserNotFoundError, NoneUniqueUserError
 
+server_names['mysslcherrypy'] = MySSLCherryPy
 
 class Server:
 
@@ -19,7 +20,7 @@ class Server:
         self.pools = {}  # with a simple count could be a list - but this supports any id's
 
     def start(self):
-        self._app.run(host=self._host, port=self._port)
+        self._app.run(host=self._host, port=self._port, server='mysslcherrypy')
 
     @router('POST', '/v1/<pool_id>/users')
     def add_new_user(self, pool_id):
@@ -102,6 +103,6 @@ class Server:
             return 'Error - No such pool id\n'
 
         return ''.join(
-            '{0[spender]} spent {0[amount]} on {0[consumers]\n}'.format(transaction)
+            '{0[spender]} spent {0[amount]} on {0[consumers]}\n'.format(transaction)
             for transaction in pool.old_transactions
         )
