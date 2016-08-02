@@ -2,7 +2,7 @@
 Helper functions for the bottle server stuff
 Mainly for setting up the routes
 '''
-import bottle
+
 
 def router(method, route):
     '''Decorator to tag class methods for routing'''
