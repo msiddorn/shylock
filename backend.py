@@ -23,17 +23,13 @@ class Pool:
         and everything is fair and equal
     '''
 
-    def __init__(self, pool_id, name=None):
-        self.id = pool_id
+    def __init__(self, name=None):
         if name is None:
             name = 'nameless pool'
         self.name = name
         self.users = []
         self.balances = defaultdict(float)
         self.old_transactions = []
-
-    def __repr__(self):
-        return '{0.id}:{0.name}'.format(self)
 
     def add_user(self, name):
         if name is None or name in self.users:
@@ -43,10 +39,7 @@ class Pool:
     def add_transaction(self, spender, amount, consumers):
         for user in [spender] + list(consumers.keys()):
             if user not in self.users:
-                raise UserNotFoundError('User {} not in pool {}'.format(
-                    user,
-                    self,
-                ))
+                raise UserNotFoundError('User {} not in pool'.format(user))
         self.balances[spender] -= amount
         norm_factor = 1 / sum(ratio for ratio in consumers.values())
         for consumer, ratio in consumers.items():

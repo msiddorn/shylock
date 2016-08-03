@@ -25,6 +25,10 @@ class Server:
     def home_page(self):
         return 'hello world'
 
+    @property
+    def pools_dict(self):
+        return {pool_id: pool.__dict__ for pool_id, pool in self.pools.items()}
+
     @router('POST', '/v1/<pool_id>/users')
     def add_new_user(self, pool_id):
         try:
@@ -38,8 +42,7 @@ class Server:
         except NoneUniqueUserError as err:
             return str(err)
 
-        # return a 200 OK
-        return 'done\n'
+        return
 
     @router('GET', '/v1/<pool_id>/users')
     def list_users(self, pool_id):
@@ -67,14 +70,14 @@ class Server:
         data = json.loads(request.body.read().decode('utf-8'))
         name = data.get('name')
         pool_id = str(next(self.pool_ids))
-        self.pools[pool_id] = Pool(pool_id, name)
+        self.pools[pool_id] = Pool(name)
 
         # return a 200 OK
         return 'done\n'
 
     @router('GET', '/v1/pools')
     def list_pools(self):
-        return ''.join('{}\n'.format(pool) for pool in self.pools.values())
+        return self.pools_dict
 
     @router('POST', '/v1/<pool_id>/transactions')
     def create_new_transaction(self, pool_id):

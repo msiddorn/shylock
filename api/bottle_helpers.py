@@ -2,17 +2,27 @@
 Helper functions for the bottle server stuff
 Mainly for setting up the routes
 '''
+import json
+from bottle import response
 
 
 def router(method, route):
     '''Decorator to tag class methods for routing'''
     def outer(fn):
+
+        # GET's are always in JSON
+        if method == 'GET':
+            def inner(*args, **kwargs):
+                response.content_type = 'application/json'
+                return json.dumps(fn(*args, **kwargs))
+        else:
+            inner = fn
         setattr(
-            fn,
+            inner,
             'route_{}'.format(method),
             route
         )
-        return fn
+        return inner
     return outer
 
 

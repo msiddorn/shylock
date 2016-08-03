@@ -1,5 +1,12 @@
 import requests
 import json
+from sys import argv
+
+
+if argv[1] == 'local':
+    address_prefix = 'http://0.0.0.0:{}/v1/'.format(argv[2])
+elif argv[1] == 'heroku':
+    address_prefix = 'https://calm-brushlands-26293.herokuapp.com/v1/'
 
 
 api_calls = [
@@ -57,9 +64,9 @@ api_calls = [
 
 headers = {'Content-Type': 'application/json'}
 
-for description, api_loc, data in api_calls:
+for description, api_call, data in api_calls:
     print(description)
-    address = 'http://0.0.0.0:5000/v1/{}'.format(api_loc)
+    address = address_prefix + api_call
     if data is None:
         print('Calling get on "{}"'.format(address))
         r = requests.get(address)
