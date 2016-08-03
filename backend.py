@@ -23,9 +23,7 @@ class Pool:
         and everything is fair and equal
     '''
 
-    def __init__(self, name=None):
-        if name is None:
-            name = 'nameless pool'
+    def __init__(self, name='Nameless pool'):
         self.name = name
         self.users = []
         self.balances = defaultdict(float)

@@ -34,7 +34,7 @@ class Server:
 
     @router('GET', '/v1/<pool_id>/users')
     def list_users(self, pool):
-        return [name for name in pool.users]
+        return pool.users
 
     @router('GET', '/v1/<pool_id>/balances')
     def list_balances(self, pool):
