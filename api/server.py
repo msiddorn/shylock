@@ -34,21 +34,18 @@ class Server:
 
     @router('GET', '/v1/<pool_id>/users')
     def list_users(self, pool):
-        return ''.join('{}\n'.format(name) for name in pool.users)
+        return [name for name in pool.users]
 
     @router('GET', '/v1/<pool_id>/balances')
     def list_balances(self, pool):
-        return ''.join(
-            '{}: {}£{:0.2f}\n'.format(name, '' if balance >= 0 else '-', abs(balance))
-            for name, balance in pool.balances.items()
-        )
+        return {name: pool.balances.get(name, 0) for name in pool.users}
 
     @router('GET', '/v1/<pool_id>/transactions')
     def list_transactions(self, pool):
-        return ''.join(
-            '{0[spender]} spent {0[amount]} on {0[consumers]}\n'.format(transaction)
+        return [
+            '{0[spender]} spent {0[amount]} on {0[consumers]}'.format(transaction)
             for transaction in pool.old_transactions
-        )
+        ]
 
     @router('POST', '/v1/pools')
     def create_new_pool(self, data):
@@ -71,7 +68,7 @@ class Server:
             amount = data['amount']
             consumers = data['consumers']
         except KeyError:
-            return 'Error - I need all this information\n'
+            abort(400, 'Need a sender, and amount, and consumers')
 
         try:
             pool.add_transaction(spender, amount, consumers)
