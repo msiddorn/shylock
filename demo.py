@@ -59,7 +59,7 @@ headers = {'Content-Type': 'application/json'}
 
 for description, api_loc, data in api_calls:
     print(description)
-    address = 'http://0.0.0.0:9555/v1/{}'.format(api_loc)
+    address = 'http://0.0.0.0:5000/v1/{}'.format(api_loc)
     if data is None:
         print('Calling get on "{}"'.format(address))
         r = requests.get(address)
