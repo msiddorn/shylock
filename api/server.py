@@ -21,6 +21,10 @@ class Server:
     def start(self):
         self._app.run(host=self._host, port=self._port)
 
+    @router('GET', '/')
+    def home_page(self):
+        return 'hello world'
+
     @router('POST', '/v1/<pool_id>/users')
     def add_new_user(self, pool_id):
         try:
