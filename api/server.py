@@ -2,8 +2,7 @@
 '''
     Backend webapi for the shylock program
 '''
-import json
-from bottle import Bottle, request
+from bottle import Bottle, abort
 from itertools import count
 from .bottle_helpers import router
 from backend import Pool, UserNotFoundError, NoneUniqueUserError
@@ -21,71 +20,52 @@ class Server:
     def start(self):
         self._app.run(host=self._host, port=self._port)
 
-    @router('GET', '/')
-    def home_page(self):
-        return 'hello world'
-
     @property
     def pools_dict(self):
         return {pool_id: pool.__dict__ for pool_id, pool in self.pools.items()}
 
-    @router('POST', '/v1/<pool_id>/users')
-    def add_new_user(self, pool_id):
-        try:
-            pool = self.pools[pool_id]
-        except KeyError:
-            return 'Error - No such pool id\n'
-        data = json.loads(request.body.read().decode('utf-8'))
-        name = data.get('name')
-        try:
-            pool.add_user(name)
-        except NoneUniqueUserError as err:
-            return str(err)
-
-        return
-
-    @router('GET', '/v1/<pool_id>/users')
-    def list_users(self, pool_id):
-        try:
-            pool = self.pools[pool_id]
-        except KeyError:
-            return 'Error - No such pool id\n'
-
-        return ''.join('{}\n'.format(name) for name in pool.users)
-
-    @router('GET', '/v1/<pool_id>/balances')
-    def list_balances(self, pool_id):
-        try:
-            pool = self.pools[pool_id]
-        except KeyError:
-            return 'Error - No such pool id\n'
-
-        return ''.join(
-            '{}: {}£{:0.2f}\n'.format(name, '' if balance >= 0 else '-', abs(balance))
-            for name, balance in pool.balances.items()
-        )
-
-    @router('POST', '/v1/pools')
-    def create_new_pool(self):
-        data = json.loads(request.body.read().decode('utf-8'))
-        name = data.get('name')
-        pool_id = str(next(self.pool_ids))
-        self.pools[pool_id] = Pool(name)
-
-        # return a 200 OK
-        return 'done\n'
+    @router('GET', '/')
+    def home_page(self):
+        return 'hello world'
 
     @router('GET', '/v1/pools')
     def list_pools(self):
         return self.pools_dict
 
-    @router('POST', '/v1/<pool_id>/transactions')
-    def create_new_transaction(self, pool_id):
+    @router('GET', '/v1/<pool_id>/users')
+    def list_users(self, pool):
+        return ''.join('{}\n'.format(name) for name in pool.users)
+
+    @router('GET', '/v1/<pool_id>/balances')
+    def list_balances(self, pool):
+        return ''.join(
+            '{}: {}£{:0.2f}\n'.format(name, '' if balance >= 0 else '-', abs(balance))
+            for name, balance in pool.balances.items()
+        )
+
+    @router('GET', '/v1/<pool_id>/transactions')
+    def list_transactions(self, pool):
+        return ''.join(
+            '{0[spender]} spent {0[amount]} on {0[consumers]}\n'.format(transaction)
+            for transaction in pool.old_transactions
+        )
+
+    @router('POST', '/v1/pools')
+    def create_new_pool(self, data):
+        name = data.get('name')
+        pool_id = str(next(self.pool_ids))
+        self.pools[pool_id] = Pool(name)
+
+    @router('POST', '/v1/<pool_id>/users')
+    def add_new_user(self, pool, data):
+        name = data.get('name')
         try:
-            pool = self.pools[pool_id]
-        except KeyError:
-            return 'Error - No such pool id\n'
-        data = json.loads(request.body.read().decode('utf-8'))
+            pool.add_user(name)
+        except NoneUniqueUserError as err:
+            abort(403, 'Duplicate names would be confusing and are not allowed')
+
+    @router('POST', '/v1/<pool_id>/transactions')
+    def create_new_transaction(self, pool, data):
         try:
             spender = data['spender']
             amount = data['amount']
@@ -96,19 +76,4 @@ class Server:
         try:
             pool.add_transaction(spender, amount, consumers)
         except UserNotFoundError as err:
-            return str(err)
-
-        # return a 200 OK
-        return 'done\n'
-
-    @router('GET', '/v1/<pool_id>/transactions')
-    def list_transactions(self, pool_id):
-        try:
-            pool = self.pools[pool_id]
-        except KeyError:
-            return 'Error - No such pool id\n'
-
-        return ''.join(
-            '{0[spender]} spent {0[amount]} on {0[consumers]}\n'.format(transaction)
-            for transaction in pool.old_transactions
-        )
+            abort(404, 'No such user in this pool')

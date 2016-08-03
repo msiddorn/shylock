@@ -3,20 +3,36 @@ Helper functions for the bottle server stuff
 Mainly for setting up the routes
 '''
 import json
-from bottle import response
+from bottle import request, response, abort
 
 
 def router(method, route):
     '''Decorator to tag class methods for routing'''
     def outer(fn):
 
-        # GET's are always in JSON
-        if method == 'GET':
-            def inner(*args, **kwargs):
+        def inner(self, *args, **kwargs):
+
+            # implement a bearer check here maybe
+
+            # input validation on pool_id
+            pool_requested = kwargs.get('pool_id')
+            if pool_requested is not None:
+                kwargs.pop('pool_id')
+                try:
+                    kwargs['pool'] = self.pools[pool_requested]
+                except KeyError:
+                    abort(404, 'No such pool id')
+
+            # GET's are always in JSON
+            if method == 'GET':
                 response.content_type = 'application/json'
-                return json.dumps(fn(*args, **kwargs))
-        else:
-            inner = fn
+                return json.dumps(fn(self, *args, **kwargs))
+            elif method == 'POST':
+                kwargs['data'] = json.loads(request.body.read().decode('utf-8'))
+                return fn(self, *args, **kwargs)
+            else:
+                return fn(self, *args, **kwargs)
+
         setattr(
             inner,
             'route_{}'.format(method),
