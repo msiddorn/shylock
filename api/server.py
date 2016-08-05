@@ -2,9 +2,9 @@
 '''
     Backend webapi for the shylock program
 '''
-from bottle import Bottle, abort
+from bottle import Bottle, abort, static_file
 from itertools import count
-from .bottle_helpers import router
+from .bottle_helpers import webapi, picture
 from backend import Pool, UserNotFoundError, NoneUniqueUserError
 
 
@@ -24,36 +24,36 @@ class Server:
     def pools_dict(self):
         return {pool_id: pool.__dict__ for pool_id, pool in self.pools.items()}
 
-    @router('GET', '/')
+    @webapi('GET', '/')
     def home_page(self):
         return 'hello world'
 
-    @router('GET', '/v1/pools')
+    @webapi('GET', '/v1/pools')
     def list_pools(self):
         return self.pools_dict
 
-    @router('GET', '/v1/<pool_id>/users')
+    @webapi('GET', '/v1/<pool_id>/users')
     def list_users(self, pool):
         return pool.users
 
-    @router('GET', '/v1/<pool_id>/balances')
+    @webapi('GET', '/v1/<pool_id>/balances')
     def list_balances(self, pool):
         return {name: pool.balances.get(name, 0) for name in pool.users}
 
-    @router('GET', '/v1/<pool_id>/transactions')
+    @webapi('GET', '/v1/<pool_id>/transactions')
     def list_transactions(self, pool):
         return [
             '{0[spender]} spent {0[amount]} on {0[consumers]}'.format(transaction)
             for transaction in pool.old_transactions
         ]
 
-    @router('POST', '/v1/pools')
+    @webapi('POST', '/v1/pools')
     def create_new_pool(self, data):
         name = data.get('name')
         pool_id = str(next(self.pool_ids))
         self.pools[pool_id] = Pool(name)
 
-    @router('POST', '/v1/<pool_id>/users')
+    @webapi('POST', '/v1/<pool_id>/users')
     def add_new_user(self, pool, data):
         name = data.get('name')
         try:
@@ -61,7 +61,7 @@ class Server:
         except NoneUniqueUserError as err:
             abort(403, 'Duplicate names would be confusing and are not allowed')
 
-    @router('POST', '/v1/<pool_id>/transactions')
+    @webapi('POST', '/v1/<pool_id>/transactions')
     def create_new_transaction(self, pool, data):
         try:
             spender = data['spender']
@@ -74,3 +74,7 @@ class Server:
             pool.add_transaction(spender, amount, consumers)
         except UserNotFoundError as err:
             abort(404, 'No such user in this pool')
+
+    @picture('/images/avatar')
+    def avatar(self):
+        return static_file('avatar.jpg', 'images')

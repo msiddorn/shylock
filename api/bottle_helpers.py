@@ -6,8 +6,8 @@ import json
 from bottle import request, response, abort
 
 
-def router(method, route):
-    '''Decorator to tag class methods for routing'''
+def webapi(method, route):
+    '''Decorator to tag class methods for the webapi'''
     def outer(fn):
 
         def inner(self, *args, **kwargs):
@@ -41,6 +41,18 @@ def router(method, route):
         return inner
     return outer
 
+def picture(route):
+    ''' Decorator to tag a method as an image source '''
+    def outer(fn):
+        setattr(
+            fn,
+            'route_GET',
+            route,
+        )
+        return fn
+    return outer
+
+
 
 def init_routes(app):
     '''Initialise the bottle routes for an object'''
@@ -49,7 +61,6 @@ def init_routes(app):
         for method_name in ['GET', 'POST']:
             route = getattr(attr, 'route_{}'.format(method_name), None)
             if route is not None:
-                print(method_name, route, attr)
                 app._app.route(
                     route,
                     method=method_name,
