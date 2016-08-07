@@ -3,6 +3,8 @@
     Backend webapi for the shylock program
 '''
 from bottle import Bottle, abort, static_file
+from cherrypy.wsgiserver import CherryPyWSGIServer
+from cherrypy.wsgiserver.ssl_builtin import BuiltinSSLAdapter
 from itertools import count
 from .bottle_helpers import webapi, picture
 from backend import Pool, UserNotFoundError, NoneUniqueUserError
@@ -11,14 +13,33 @@ from backend import Pool, UserNotFoundError, NoneUniqueUserError
 class Server:
 
     def __init__(self, host, port):
-        self._host = host
-        self._port = port
+        self.host = host
+        self.port = port
+        self.ssl_cert = 'cert.pem'
+        self.ssl_key = 'privkey.pem'
         self._app = Bottle()
         self.pool_ids = count(0)
         self.pools = {}  # with a simple count could be a list - but this supports any id's
 
-    def start(self):
-        self._app.run(host=self._host, port=self._port)
+    def start(self, use_ssl):
+        if use_ssl:
+            CherryPyWSGIServer.ssl_adapter = BuiltinSSLAdapter(
+                self.ssl_cert,
+                self.ssl_key,
+                None
+            )
+            server = CherryPyWSGIServer(
+                (self.host, self.port),
+                self._app,
+                server_name='SplitPotAPI',
+                numthreads=10
+            )
+            try:
+                server.start()
+            except KeyboardInterrupt:
+                server.stop()
+        else:
+            self._app.run(host=self.host, port=self.port)
 
     @property
     def pools_dict(self):
