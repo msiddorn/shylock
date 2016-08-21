@@ -9,35 +9,35 @@ class BaseShylockException(Exception):
     ''' base exception class for the shylock program'''
 
 
-class UserNotFoundError(BaseShylockException):
-    ''' User not found where it was expected '''
+class MemberNotFoundError(BaseShylockException):
+    ''' Member not found where it was expected '''
 
 
-class NoneUniqueUserError(BaseShylockException):
-    ''' Ambiguous reference to a user '''
+class NoneUniqueMemberError(BaseShylockException):
+    ''' Ambiguous reference to a member '''
 
 
 class Pool:
     '''
-        A pool is a group of users and transactions where people spend and consume money
+        A pool is a group of members and transactions where people spend and consume money
         and everything is fair and equal
     '''
 
     def __init__(self, name='Nameless pool'):
         self.name = name
-        self.users = []
+        self.members = []
         self.balances = defaultdict(float)
         self.old_transactions = []
 
-    def add_user(self, name):
-        if name is None or name in self.users:
-            raise NoneUniqueUserError('new users in a pool must have a unique name')
-        self.users.append(name)
+    def add_member(self, name):
+        if name is None or name in self.members:
+            raise NoneUniqueMemberError('new members in a pool must have a unique name')
+        self.members.append(name)
 
     def add_transaction(self, spender, amount, consumers):
-        for user in [spender] + list(consumers.keys()):
-            if user not in self.users:
-                raise UserNotFoundError('User {} not in pool'.format(user))
+        for member in [spender] + list(consumers.keys()):
+            if member not in self.members:
+                raise MemberNotFoundError('Member {} not in pool'.format(member))
         self.balances[spender] -= amount
         norm_factor = 1 / sum(ratio for ratio in consumers.values())
         for consumer, ratio in consumers.items():
