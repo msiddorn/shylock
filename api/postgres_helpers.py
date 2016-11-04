@@ -7,7 +7,7 @@ class Database:
 
     def __init__(self):
         try:
-            self.conn = psycopg2.connect(database='DATABASE', user='split-pot')
+            self.conn = psycopg2.connect(database='d3eqp4tbb873a3', user='wddgtmcjcukqte', port=5432, password='uLOXVJ2K1bnlGv8B7hG6y7mrF6')
             self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except psycopg2.DatabaseError as err:
             print('Error {}'.format(err))
