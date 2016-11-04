@@ -1,6 +1,13 @@
 bottle==0.12.9
+cffi==1.8.3
 CherryPy==8.1.2
+cryptography==1.5.2
+idna==2.1
+psycopg2==2.6.2
 py==1.4.31
+pyasn1==0.1.9
+pycparser==2.17
+pyOpenSSL==16.2.0
 pytest==2.9.2
 requests==2.10.0
 six==1.10.0
