@@ -7,7 +7,7 @@ from cherrypy.wsgiserver import CherryPyWSGIServer
 from cherrypy.wsgiserver.ssl_builtin import BuiltinSSLAdapter
 from itertools import count
 from .bottle_helpers import webapi, picture
-# from .postgres_helpers import Database
+from .postgres_helpers import Database
 from backend import Pool, MemberNotFoundError, NoneUniqueMemberError
 
 
@@ -21,7 +21,7 @@ class Server:
         self._app = Bottle()
         self.pool_ids = count(0)
         self.pools = {}  # with a simple count could be a list - but this supports any id's
-        # self.db = Database()
+        self.db = Database()
 
     def start(self, use_ssl):
         try:
@@ -44,8 +44,7 @@ class Server:
             else:
                 self._app.run(host=self.host, port=self.port)
         finally:
-            pass
-            # self.db.teardown()
+            self.db.teardown()
 
     @property
     def pools_dict(self):
@@ -53,7 +52,7 @@ class Server:
 
     @webapi('GET', '/')
     def home_page(self):
-        return 'hello world'
+        return self.db.version
 
     @webapi('GET', '/v1/pools')
     def list_pools(self):
@@ -82,11 +81,12 @@ class Server:
 
     @webapi('POST', '/v1/users')
     def create_new_user(self, pool):
-        try:
-            username = data['name']
-            password = data['password']
-        except KeyError:
-            abort(400, 'POST data must contain both a username and a password')
+        pass
+        # try:
+        #     username = data['name']
+        #     password = data['password']
+        # except KeyError:
+        #     abort(400, 'POST data must contain both a username and a password')
 
         # err_code, msg = self.db.add_user(username, password)
         # if err_code is not None:

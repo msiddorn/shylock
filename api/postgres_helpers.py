@@ -1,3 +1,4 @@
+import sys
 import psycopg2
 import psycopg2.extras
 
@@ -6,11 +7,15 @@ class Database:
 
     def __init__(self):
         try:
-            self.conn = psycopg2.connect(database='testdb', user='millipede')
-            self.cursor = self.conn.cursor(cursor_factory=pscopg2.extras.DictCursor)
+            self.conn = psycopg2.connect(database='DATABASE', user='split-pot')
+            self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except psycopg2.DatabaseError as err:
-            print('Error {}'.format(e))
+            print('Error {}'.format(err))
             sys.exit(1)
+
+    @property
+    def version(self):
+        return self.cursor.execute('SELECT version()')
 
     def teardown(self):
         self.conn.close()
@@ -36,4 +41,3 @@ class Database:
 
     def add_pool(self, pool, username, names):
         pass
-

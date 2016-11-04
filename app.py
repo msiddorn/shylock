@@ -10,4 +10,5 @@ if __name__ == '__main__':
     app = Server(host, port)
     init_routes(app)
     use_ssl = False if 'heroku' in argv else True
+    use_ssl = False
     app.start(use_ssl)

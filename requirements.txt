@@ -1,4 +1,6 @@
 bottle==0.12.9
-requests==2.2.1
+CherryPy==8.1.2
+py==1.4.31
 pytest==2.9.2
-psycopg2==2.6.2
+requests==2.10.0
+six==1.10.0
